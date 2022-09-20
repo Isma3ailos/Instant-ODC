@@ -2,9 +2,9 @@
 
 $id =  $_GET['id'];
 
-printf($id);
 $connection = mysqli_connect("localhost","root","","instant");
-$query =  mysqli_query($connection,"DELETE FROM `students` WHERE `student_id` = $id");
+$query =  mysqli_query($connection,"DELETE FROM students WHERE student_id =  $id");
+error_reporting(0);
+header("location: index.php");
 
-header("location: tables.php");
 

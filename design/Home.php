@@ -1,23 +1,19 @@
 <?php 
-    $connection = mysqli_connect("localhost","root","","instant");
-    $query = mysqli_query($connection, "SELECT * FROM students");
-    $query_results = mysqli_fetch_all($query,MYSQLI_ASSOC);
-
-if(isset($_GET['search'])){
-    unset($_GET['search']);
-    $query = $_GET['search'];
+    session_start();
+    include "function.php";
+    $id = $_SESSION['idd'];
     $connection = mysqli_connect("localhost", "root", "", "instant");
-    $query = mysqli_query($connection, "SELECT * FROM instant.phones
-    JOIN instant.students 
-    ON phones.user_id = students.student_id
-    JOIN instant.branches
-    ON students.branch_id = branches.branch_id
-    Where student_name like '%$query%' OR phone like '%$query%'");
-    $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
-}
+
+    $query_courses = mysqli_query($connection, "SELECT * FROM courses_students
+    INNER JOIN students 
+    ON courses_students.student_id = students.student_id
+    INNER JOIN courses
+    ON courses_students.course_id = courses.course_id
+    INNER JOIN branches
+    ON branches.branch_id = courses.branch_id
+    WHERE courses_students.student_id = $id");
+    $query_results = mysqli_fetch_all($query_courses, MYSQLI_ASSOC);
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +51,7 @@ if(isset($_GET['search'])){
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
                 <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
                     <div class="sidebar-brand-icon rotate-n-15">
                         <i class="fas fa-laugh-wink"></i>
                     </div>
@@ -75,60 +71,16 @@ if(isset($_GET['search'])){
                 <!-- Divider -->
                 <hr class="sidebar-divider">
     
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    Admin Options
-                </div>
-    
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                        aria-expanded="true" aria-controls="collapsePages">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Students</span>
-                    </a>
-                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Screens:</h6>
-                            <a class="collapse-item" href="register.php">Add New Member</a>
-                        
-                        </div>
-                    </div>
-                </li>
-    
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePagess"
-                        aria-expanded="true" aria-controls="collapsePagess">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Locations</span>
-                    </a>
-                    <div id="collapsePagess" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">branches:</h6>
-                            <a class="collapse-item" href="Alex.php">ALexandria</a>
-                            <a class="collapse-item" href="Kafr.php">Kafr</a>
-                            <a class="collapse-item" href="Cairo.php">Cairo</a>
-                            <a class="collapse-item" href="Giza.php">Giza</a>
-                        </div>
-                    </div>
-                </li>
-
-            <!-- Nav Item - Tables -->
-            <li class="nav-item active">
-                <a class="nav-link" href="tables.php">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Table of Students</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="instructors.php">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Instructors</span></a>
-            </li>
+                
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
-
+                
+            <li class="nav-item">
+                <a class="nav-link" href="instructors.php?q=*">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>My Classroom</span></a>
+            <hr class="sidebar-divider d-none d-md-block">
+            </li>
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -154,13 +106,13 @@ if(isset($_GET['search'])){
                     </form>
 
                     <!-- Topbar Search -->
-                    <form
+                    <form method="POST" action="index.php"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            <input type="text" name="search" class="form-control bg-light border-0 small" placeholder="Search for..."
                                 aria-label="Search" aria-describedby="basic-addon2">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
+                                <button class="btn btn-primary" type="submit" name="sub">
                                     <i class="fas fa-search fa-sm"></i>
                                 </button>
                             </div>
@@ -317,7 +269,7 @@ if(isset($_GET['search'])){
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION['id']?></span>
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
@@ -353,6 +305,10 @@ if(isset($_GET['search'])){
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
+                    <h1 class="h3 mb-2 text-gray-800">Courses</h1>
+
+                    <!-- DataTales Example -->
+                    <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">Tables</h1>
 
                     <!-- DataTales Example -->
@@ -365,32 +321,37 @@ if(isset($_GET['search'])){
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>Student Name</th>
-                                            <th>Student Email</th>
-                                            <th>Student Password</th>
-                                            <th>Branch ID</th>
-                                            <th>Delete</th>
+                                            <th>Course Name</th>
+                                            <th>Price</th>
+                                            <th>Branch Name</th>
+                                            <th>Duration</th>
+                                            <th>Enrollment Date</th>
+                                            <th>Rating</th>
+                                            <th>Instructor</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
-                                            <th>Student Name</th>
-                                            <th>Student Email</th>
-                                            <th>Student Password</th>
-                                            <th>Branch ID</th>
-                                            <th>Delete</th>
+                                            <th>Course Name</th>
+                                            <th>Price</th>
+                                            <th>Branch Name</th>
+                                            <th>Duration</th>
+                                            <th>Enrollment Date</th>
+                                            <th>Rating</th>
+                                            <th>Instructor</th>
                         
                                         </tr>
                                     </tfoot>
                                     <tbody>
-                                        <?php foreach($query_results as $student):?>
+                                        <?php foreach($query_results as $course):?>
                                         <tr>
-                                            <td><?= $student['student_name']; ?></td>
-                                            <td><?= $student['student_email']; ?></td>
-                                            <td><?= $student['student_password']; ?></td>
-                                            <td><?= $student['branch_id']; ?></td>
-                                            
-                                            <td><a href="delete.php?id=<?=  $student['student_id']; ?>">Delete</a></td>
+                                            <td><?= $course['course_name']; ?></td>
+                                            <td><?= $course['price']; ?></td>
+                                            <td><?= $course['branch_name']; ?></td>
+                                            <td><?= $course['duration']; ?></td>
+                                            <td><?= $course['enrollment_date']; ?></td>
+                                            <td><?= $course['rating']; ?></td>
+                                            <td><?= $course['instructor_id']; ?></td>
                                         </tr>
                                         <?php endforeach ?>
                                     </tbody>
@@ -398,6 +359,7 @@ if(isset($_GET['search'])){
                             </div>
                         </div>
                     </div>
+
 
                 </div>
                 <!-- /.container-fluid -->
@@ -440,7 +402,7 @@ if(isset($_GET['search'])){
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="logout.php">Logout</a>
                 </div>
             </div>
         </div>

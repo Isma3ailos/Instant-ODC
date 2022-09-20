@@ -2,28 +2,81 @@
 <?php
 
 session_start();
-if(isset($_GET['search'])){
-    
-    $query = $_GET['search'];
-    $connection = mysqli_connect("localhost", "root", "", "root");
-    $query = mysqli_query($connection, "SELECT * FROM instant.phones
-    JOIN instant.students 
-    ON phones.user_id = students.student_id
-    JOIN instant.branches
-    ON students.branch_id = branches.branch_id
-    Where student_name like '%$query%' OR phone like '%$query%'");
-    $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
-    foreach ($query_results as $value){
-        
+if($_SESSION['is_loged']==false){
+    header("location: logout.php");
+}
+
+$connection = mysqli_connect("localhost", "root", "", "instant");
+$query5 = mysqli_query($connection,"SELECT * FROM branches WHERE isactive = 1");
+$branchs = mysqli_fetch_all($query5,MYSQLI_ASSOC);
+$query_results = [[
+    "student_id" => "",
+    "student_name" => "",
+    "student_password" => "",
+    "student_phone" => "",
+    "student_email" => "",
+    "branch_name" => ""
+
+]];  
+if(isset($_GET['branch_id'])){
+    $branchs_id = $_GET['branch_id'];
+
+    if($_SESSION['level'] == 2){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students JOIN branches ON students.branch_id= branches.branch_id JOIN  courses_students ON courses_students.student_id = students.student_id JOIN courses ON courses_students.course_id = courses.course_id JOIN instructors ON courses.instructor_id = instructors.instructor_id WHERE (students.branch_id=$branchs_id)");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
     }
-    
-    unset($_GET['search']);
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students JOIN branches ON students.branch_id= branches.branch_id WHERE students.branch_id=$branchs_id");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_GET['branch_id']);
 
 }
-?>
+if(isset($_POST['sub'])){
 
-<?php
-if($_SESSION['level'] != 1){;
+    $search = $_POST['search'];
+    if($_SESSION['level'] == 2){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students 
+        JOIN branches ON students.branch_id= branches.branch_id JOIN  courses_students ON courses_students.student_id = students.student_id JOIN courses ON courses_students.course_id = courses.course_id JOIN instructors ON courses.instructor_id = instructors.instructor_id WHERE (courses.instructor_id = 1) AND (students.student_name LIKE '%a%' OR students.student_phone LIKE '%11%')");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students JOIN branches ON students.branch_id= branches.branch_id WHERE student_name LIKE '%$search%' OR student_phone LIKE '%$search%'");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_POST['sub']);
+}
+if(isset($_POST['search']) && $_POST['search']=="*"){
+
+    if($_SESSION['level'] == 2){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students 
+        JOIN branches ON students.branch_id= branches.branch_id JOIN  courses_students ON courses_students.student_id = students.student_id JOIN courses ON courses_students.course_id = courses.course_id JOIN instructors ON courses.instructor_id = instructors.instructor_id");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students JOIN branches ON students.branch_id= branches.branch_id");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    
+    
+    unset($_POST['sub']);
+}
+elseif(isset($_GET['q'])  && $_GET['q'] == "*"){
+
+    if($_SESSION['level'] == 2){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students 
+        JOIN branches ON students.branch_id= branches.branch_id JOIN  courses_students ON courses_students.student_id = students.student_id JOIN courses ON courses_students.course_id = courses.course_id JOIN instructors ON courses.instructor_id = instructors.instructor_id");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.students JOIN branches ON students.branch_id= branches.branch_id");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    
+    unset($_GET['q']);
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,7 +114,7 @@ if($_SESSION['level'] != 1){;
             <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
                 <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.php">
                     <div class="sidebar-brand-icon rotate-n-15">
                         <i class="fas fa-laugh-wink"></i>
                     </div>
@@ -97,6 +150,7 @@ if($_SESSION['level'] != 1){;
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Screens:</h6>
                             <a class="collapse-item" href="register.php">Add New Member</a>
+                            <a class="collapse-item" href="addcourse.php">Link a Course</a>
                         </div>
                     </div>
                 </li>
@@ -112,30 +166,34 @@ if($_SESSION['level'] != 1){;
                     <div id="collapsePagess" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">branches:</h6>
-                            <a class="collapse-item" href="Alex.php">ALexandria</a>
-                            <a class="collapse-item" href="Kafr.php">Kafr</a>
-                            <a class="collapse-item" href="Cairo.php">Cairo</a>
-                            <a class="collapse-item" href="Giza.php">Giza</a>
-                        
+                            <?php foreach($branchs as $branch): ?>
+                            <a class="collapse-item" href="index.php?branch_id=<?=  $branch['branch_id']; ?>"><?= $branch['branch_name'];?></a>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </li>
 
             <!-- Nav Item - Tables -->
             <li class="nav-item">
-                <a class="nav-link" href="tables.php">
+                <a class="nav-link" href="index.php?q=*">
                     <i class="fas fa-fw fa-table"></i>
-                    <span>Table of Students</span></a>
+                    <span>Students</span></a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="instructors.php">
+                <a class="nav-link" href="instructors.php?q=*">
                     <i class="fas fa-fw fa-table"></i>
                     <span>Instructors</span></a>
             </li>
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
-
+                
+            <li <?php require_once("valdiate_level_display.php"); val_hide(1);?> class="nav-item">
+                <a class="nav-link" href="instructors.php?q=*">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>My Classroom</span></a>
+            <hr class="sidebar-divider d-none d-md-block">
+            </li>
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -161,13 +219,13 @@ if($_SESSION['level'] != 1){;
                     </form>
 
                     <!-- Topbar Search -->
-                    <form
+                    <form method="POST" action="index.php"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            <input type="text" name="search" class="form-control bg-light border-0 small" placeholder="Search for..."
                                 aria-label="Search" aria-describedby="basic-addon2">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
+                                <button class="btn btn-primary" type="submit" name="sub">
                                     <i class="fas fa-search fa-sm"></i>
                                 </button>
                             </div>
@@ -324,7 +382,7 @@ if($_SESSION['level'] != 1){;
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION['id'];?></span>
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
@@ -360,7 +418,7 @@ if($_SESSION['level'] != 1){;
                 <div class="container-fluid">
 
                     <!-- Page Heading -->
-                    <h1 class="h3 mb-2 text-gray-800">Tables</h1>
+                    <h1 class="h3 mb-2 text-gray-800">Results</h1>
 
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
@@ -374,28 +432,26 @@ if($_SESSION['level'] != 1){;
                                         <tr>
                                             <th>Student Name</th>
                                             <th>Student Email</th>
-                                            <th>Student Password</th>
-                                            <th>Branch ID</th>
+                                            <th>Phone</th>
+                                            <th>Branch Name</th>
+                                            <th>Delete</th>
+                                            <th>Update</th>
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                        <th>Student Name</th>
-                                            <th>Student Email</th>
-                                            <th>Student Password</th>
-                                            <th>Branch ID</th>
-                        
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
+
+                                    
+                                    <tbody><?php if(!empty($query_results[0]['student_id'])):?>
                                         <?php foreach($query_results as $student):?>
                                         <tr>
                                             <td><?= $student['student_name']; ?></td>
                                             <td><?= $student['student_email']; ?></td>
-                                            <td><?= $student['student_password']; ?></td>
-                                            <td><?= $student['branch_id']; ?></td>
+                                            <td><?= $student['student_phone']; ?></td>
+                                            <td><?= $student['branch_name']; ?></td>
+                                            <td><a href="delete.php?id=<?=  $student['student_id']; ?>">Delete</a></td>
+                                            <td><a href="update_student.php?id=<?=  $student['student_id']; ?>">Update</a></td>
                                         </tr>
-                                        <?php endforeach ?>
+                                        <?php endforeach; endif; ?>
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -443,7 +499,7 @@ if($_SESSION['level'] != 1){;
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="logout.php">Logout</a>
                 </div>
             </div>
         </div>
@@ -469,4 +525,3 @@ if($_SESSION['level'] != 1){;
 </body>
 
 </html>
-<?php }?>

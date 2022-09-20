@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 if($_SERVER['REQUEST_METHOD'] == "POST"){
@@ -7,21 +8,33 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     if(!empty($email) && !empty($pass)){
         $connection = mysqli_connect("localhost","root","","instant");
         $query_student = mysqli_query($connection,"SELECT * FROM students WHERE student_email = '$email' and student_password = '$pass'");
+        $query_id = mysqli_query($connection,"SELECT student_id FROM students WHERE student_email = '$email' and student_password = '$pass'");
+
         if(mysqli_affected_rows($connection)== 1){
-          $_SESSION['level'] = 1; 
+          $_SESSION['level'] = 1;
+          $_SESSION['is_loged'] = true;
+          $_SESSION['id'] = mysqli_fetch_all($query_student,MYSQLI_ASSOC)[0]['student_name'];
+          $_SESSION['idd'] = mysqli_fetch_all($query_id,MYSQLI_ASSOC)[0]['student_id'];
+
           header("location:home.php");
           exit;
         }
         $query_instractor = mysqli_query($connection,"SELECT * FROM instructors WHERE instructor_email = '$email' and instructor_password = '$pass'");
         if(mysqli_affected_rows($connection)== 1){
           $_SESSION['level'] = 2; 
+          $_SESSION['is_loged'] = true;
+          $_SESSION['id'] = mysqli_fetch_all($query_instractor,MYSQLI_ASSOC)[0]['instructor_name'];
+          $_SESSION['idd'] = mysqli_fetch_all($query_id,MYSQLI_ASSOC)[0]['instructor_id'];
           header("location:index.php");
           exit;
         }
         $query_admin = mysqli_query($connection,"SELECT * FROM admins WHERE admin_email = '$email' and admin_password = '$pass'");
         if(mysqli_affected_rows($connection)== 1){
           $_SESSION['level'] = 3; 
-          header("location:index.php");
+          $_SESSION['is_loged'] = true;
+          $_SESSION['id'] = mysqli_fetch_all($query_admin,MYSQLI_ASSOC)[0]['admin_name'];
+          $_SESSION['idd'] = mysqli_fetch_all($query_id,MYSQLI_ASSOC)[0]['admin_id'];
+          header("location: index.php?q=*");
           exit;
         }
 

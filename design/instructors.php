@@ -1,10 +1,52 @@
+<?php
+session_start(); 
+    if($_SESSION['level'] == 3){
+        $connection = mysqli_connect("localhost","root","","instant");
+        $query = mysqli_query($connection, "SELECT * FROM instructors");
+        $query_results = mysqli_fetch_all($query,MYSQLI_ASSOC);
+    }else{
+        header("location:index.php");
+    }    
 
-<?php 
-    $connection = mysqli_connect("localhost","root","","instant");
-    $query = mysqli_query($connection, "SELECT * FROM instructors");
-    $query_results = mysqli_fetch_all($query,MYSQLI_ASSOC);
+$connection = mysqli_connect("localhost", "root", "", "instant");
+$query5 = mysqli_query($connection,"SELECT * FROM branches WHERE isactive = 1");
+$branchs = mysqli_fetch_all($query5,MYSQLI_ASSOC);
+if(isset($_GET['branch_id'])){
+    $branchs_id = $_GET['branch_id'];
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.instructors JOIN courses ON courses.instructor_id = instructors.instructor_id JOIN branches ON course.branch_id= branches.branch_id  WHERE (courses.branch_id=$branchs_id)");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_GET['branch_id']);
 
+}
+if(isset($_POST['sub'])){
+
+    $search = $_POST['search'];
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.instructors WHERE instructor_name LIKE '%$search%' OR instructor_phone LIKE '%$search%'");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_POST['sub']);
+}
+if(isset($_POST['search']) && $_POST['search']=="*"){
+
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.instructors");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_POST['sub']);
+}
+elseif(isset($_GET['q']) && $_GET['q'] == "*"){
+
+    if($_SESSION['level'] == 3){
+        $query = mysqli_query($connection, "SELECT * FROM instant.instructors");
+        $query_results = mysqli_fetch_all($query, MYSQLI_ASSOC);
+    }
+    unset($_GET['q']);
+}
 ?>
+
 
 
 
@@ -39,99 +81,88 @@
 
     <!-- Page Wrapper -->
     <div id="wrapper">
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <!-- Sidebar -->
-            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+<!-- Sidebar - Brand -->
+<a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+    <div class="sidebar-brand-icon rotate-n-15">
+        <i class="fas fa-laugh-wink"></i>
+    </div>
+    <div class="sidebar-brand-text mx-3">ODC Admin <sup>1</sup></div>
+</a>
 
-                <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                    <div class="sidebar-brand-icon rotate-n-15">
-                        <i class="fas fa-laugh-wink"></i>
-                    </div>
-                    <div class="sidebar-brand-text mx-3">ODC Admin <sup>1</sup></div>
-                </a>
-    
-                <!-- Divider -->
-                <hr class="sidebar-divider my-0">
-    
-                <!-- Nav Item - Dashboard -->
-                <li class="nav-item active">
-                    <a class="nav-link" href="index.php">
-                        <i class="fas fa-fw fa-tachometer-alt"></i>
-                        <span>Dashboard</span></a>
-                </li>
+<!-- Divider -->
+<hr class="sidebar-divider my-0">
 
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-    
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    Admin Options
-                </div>
-    
-                <!-- Nav Item - Pages Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                        aria-expanded="true" aria-controls="collapsePages">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Students</span>
-                    </a>
-                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Screens:</h6>
-                            <a class="collapse-item" href="register.php">Add New Member</a>
-                            <!-- <a class="collapse-item" href="forgot-password.html">Forgot Password</a>
-                            <div class="collapse-divider"></div>
-                            <h6 class="collapse-header">Other Pages:</h6>
-                            <a class="collapse-item" href="404.html">404 Page</a>
-                            <a class="collapse-item" href="blank.html">Blank Page</a> -->
-                        </div>
-                    </div>
-                </li>
-    
+<!-- Nav Item - Dashboard -->
+<li class="nav-item active">
+    <a class="nav-link" href="index.php">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>Dashboard</span></a>
+</li>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePagess"
-                        aria-expanded="true" aria-controls="collapsePagess">
-                        <i class="fas fa-fw fa-folder"></i>
-                        <span>Locations</span>
-                    </a>
-                    <div id="collapsePagess" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">branches:</h6>
-                            <a class="collapse-item" href="Alex.php">ALexandria</a>
-                            <a class="collapse-item" href="Kafr.php">Kafr</a>
-                            <a class="collapse-item" href="Cairo.php">Cairo</a>
-                            <a class="collapse-item" href="Giza.php">Giza</a>
-                        
-                        </div>
-                    </div>
-                </li>
+<!-- Divider -->
+<hr class="sidebar-divider">
 
-            <!-- Nav Item - Tables -->
-            <li class="nav-item ">
-                <a class="nav-link" href="tables.php">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Table of Students</span></a>
-            </li>
+<!-- Heading -->
+<div class="sidebar-heading">
+    Admin Options
+</div>
 
-            <!-- Nav Item - Tables -->
-            <li class="nav-item active">
-                <a class="nav-link" href="tables.php">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Instructors</span></a>
-            </li>
+<!-- Nav Item - Pages Collapse Menu -->
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
+        aria-expanded="true" aria-controls="collapsePages">
+        <i class="fas fa-fw fa-folder"></i>
+        <span>Students</span>
+    </a>
+    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Screens:</h6>
+            <a class="collapse-item" href="register.php">Add New Member</a>
+        </div>
+    </div>
+</li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
 
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
+<!-- Nav Item - Pages Collapse Menu -->
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePagess"
+        aria-expanded="true" aria-controls="collapsePagess">
+        <i class="fas fa-fw fa-folder"></i>
+        <span>Locations</span>
+    </a>
+    <div id="collapsePagess" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">branches:</h6>
+            <?php foreach($branchs as $branch): ?>
+            <a class="collapse-item" href="index.php?branch_id=<?=  $branch['branch_id']; ?>"><?= $branch['branch_name'];?></a>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</li>
 
-        </ul>
+<!-- Nav Item - Tables -->
+<li class="nav-item">
+<a class="nav-link" href="index.php?q=*">
+    <i class="fas fa-fw fa-table"></i>
+    <span>Students</span></a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="instructors.php?q=*">
+    <i class="fas fa-fw fa-table"></i>
+    <span>Instructors</span></a>
+</li>
+<!-- Divider -->
+<hr class="sidebar-divider d-none d-md-block">
+
+<!-- Sidebar Toggler (Sidebar) -->
+<div class="text-center d-none d-md-inline">
+<button class="rounded-circle border-0" id="sidebarToggle"></button>
+</div>
+
+</ul>
         <!-- End of Sidebar -->
 
         <!-- Content Wrapper -->
@@ -151,13 +182,13 @@
                     </form>
 
                     <!-- Topbar Search -->
-                    <form
+                    <form action="instructors.php" method ="POST"
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                            <input type="text" name="search" class="form-control bg-light border-0 small" placeholder="Search for..."
                                 aria-label="Search" aria-describedby="basic-addon2">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="button">
+                                <button class="btn btn-primary"  type="submit" name="sub">
                                     <i class="fas fa-search fa-sm"></i>
                                 </button>
                             </div>
@@ -314,7 +345,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small"><?= $_SESSION['id']?></span>
                                 <img class="img-profile rounded-circle"
                                     src="img/undraw_profile.svg">
                             </a>
@@ -362,24 +393,15 @@
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>instructor Name</th>
-                                            <th>instructor Email</th>
-                                            <th>instructor Password</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Password</th>
                                             <th>Salary</th>
                                             <th>Rating</th>
                                             <th>Delete</th>
+                                            <th>Update</th>
                                         </tr>
                                     </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>instructor Name</th>
-                                            <th>instructor Email</th>
-                                            <th>instructor Password</th>
-                                            <th>Salary</th>
-                                            <th>Rating</th>
-                                            <th>Delete</th>
-                                        </tr>
-                                    </tfoot>
                                     <tbody>
                                         <?php foreach($query_results as $student):?>
                                         <tr>
@@ -388,8 +410,8 @@
                                             <td><?= $student['instructor_password']; ?></td>
                                             <td><?= $student['instructor_salary']; ?></td>
                                             <td><?= $student['instructor_rating']; ?></td>
-                                            <td><a href="delete.php?id=<?=  $student['instructor_id']; ?>">Delete</a></td>
-
+                                            <td><a href="delete_instructor.php?id=<?=  $student['instructor_id']; ?>">Delete</a></td>
+                                            <td><a href="update_instructor.php?id=<?=  $student['instructor_id']; ?>">Update</a></td>
                                         </tr>
                                         <?php endforeach ?>
                                     </tbody>
@@ -439,7 +461,7 @@
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="logout.php">Logout</a>
                 </div>
             </div>
         </div>
